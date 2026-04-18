@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ebd90fb0-104b-4eec-a20c-5ebf6f06d7b5" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../Guia #0 - Repaso Java.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Guia 1.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Exception/PagoFallidoException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Manager/GestorPagos.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/Criptomoneda.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/Efectivo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/Pago.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/PagoFisico.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/PagoVirtual.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/PayPal.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Model/TarjetaCredito.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Exception/PagoFallidoException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Main.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Manager/GestorPagos.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/Criptomoneda.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/Efectivo.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/Pago.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/PagoFisico.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/PagoVirtual.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/PayPal.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Model/TarjetaCredito.class" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Exception" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="3BV8QjEmCDJnNqHfJLZut6KkXP6" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;onboarding.tips.debug.path&quot;: &quot;C:/Users/franc/Desktop/escritorio/UTN/3 Cuatrimestre/Programacion 3/Practica/Guia 1/src/Main.java&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.22966507&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;
+  }
+}</component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ebd90fb0-104b-4eec-a20c-5ebf6f06d7b5" name="Changes" comment="" />
+      <created>1774562863942</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1774562863942</updated>
+    </task>
+    <servers />
+  </component>
+</project>
