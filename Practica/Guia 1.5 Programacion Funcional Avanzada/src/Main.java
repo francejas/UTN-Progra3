@@ -63,7 +63,12 @@ public class Main {
         //unidades en stock (Precio * stock). Devolver un Opcional con el producto. En
         //caso de que no exista, lanzar una excepción.
 
+        Producto productoMasBarato = inventario.stream()
+                .min(Comparator.comparingDouble(p -> p.getStock() * p.getPrecio()))
+                .orElseThrow(RuntimeException::new);
+        System.out.println(productoMasBarato.getNombre());
 
+        //6 
 
 
 
