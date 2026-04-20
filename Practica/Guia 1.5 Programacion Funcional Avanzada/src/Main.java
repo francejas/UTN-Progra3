@@ -133,8 +133,9 @@ public class Main {
         //el costo de compra de cada producto es un 45% del valor de venta o de un
         //65% si pertenece a la categoria Electronica.
 
-        
-
+        double gananciaTotal = inventario.stream()
+                .mapToDouble(p -> (p.getPrecio() - (p.getCategoria().equals("Electronica") ? p.getPrecio() * 0.65 : p.getPrecio() * 0.45)) * p.getStock())
+                .sum();
 
     }
 
