@@ -30,7 +30,7 @@ public class Main {
         //○ Calcular el precio promedio de los productos de la categoría "Hogar", pero
         //solo considerando aquellos con stock disponible
 
-        double precioPromedio = inventario.stream()
+        double precioPromedioHogar = inventario.stream()
                 .filter(p -> p.getCategoria().equals("Hogar") && p.getStock() > 0)
                 .mapToDouble(Producto::getPrecio)
                 .average()
@@ -68,8 +68,72 @@ public class Main {
                 .orElseThrow(RuntimeException::new);
         System.out.println(productoMasBarato.getNombre());
 
-        //6 
+        //6 Productos en stock ordenados alfabéticamente
+        //○ Obtener una lista con los nombres de los productos que tienen stock,
+        //ordenarlos alfabéticamente y excluir los productos con nombres de menos de
+        //5 caracteres.
 
+        List<String> productosEnStockOrdenados = inventario.stream()
+                .filter(p -> p.getStock() > 0)
+                .filter(p -> p.getNombre().length() >= 5)
+                .map(Producto::getNombre)
+                .sorted()
+                .collect(Collectors.toList());
+
+        //7 Calculo de Stock Total
+        //○ Obtener el total de unidades en stock de todos los productos, pero solo
+        //considerando aquellos con precio superior al promedio.
+
+        double precioPromedio = inventario.stream().mapToDouble(Producto::getPrecio).average().orElse(0.0);
+
+        int stockTotal = inventario.stream().filter(p->p.getPrecio()>precioPromedio).mapToInt(Producto::getStock).sum();
+
+        //8 Stock por Categoría
+        //○ Calcular cuántas unidades en stock hay por categoría, excluyendo categorías
+        //con menos de 3 productos.
+
+
+        Map<String, List<Producto>> productosPorCategoria = inventario.stream()
+                .collect(Collectors.groupingBy(Producto::getCategoria));
+
+        Map<String, Integer> stockPorCategoria = productosPorCategoria.entrySet().stream()
+                .filter(entrada -> entrada.getValue().size() >= 3)
+                .collect(Collectors.toMap(
+                        entrada -> entrada.getKey(),
+                        entrada -> entrada.getValue().stream().mapToInt(Producto::getStock).sum()
+                ));
+
+        System.out.println("Stock por categoría (>3 productos): " + stockPorCategoria);
+
+        //9 Aplicar descuento
+        //○ Crear una nueva lista de productos con un 15% de descuento en su precio,
+        //pero solo si el producto tiene más de 20 unidades en stock.
+
+        List<Producto> productosConDescuento = inventario.stream()
+                // 1. Filtramos los que tienen más de 20 en stock
+                .filter(p -> p.getStock() > 20)
+
+                // 2. Creamos un nuevo producto "clon" aplicándole el 15% de descuento al precio
+                .map(p -> new Producto(
+                        p.getNombre(),
+                        p.getPrecio() * 0.85, // Multiplicar por 0.85 es lo mismo que restar el 15%
+                        p.getCategoria(),
+                        p.getStock()
+                ))
+
+
+                .collect(Collectors.toList());
+
+        productosConDescuento.forEach(p ->
+                System.out.println(p.getNombre() + " - Nuevo Precio: $" + p.getPrecio())
+        );
+
+        //10 Ganancia total inventario
+        //○ Calcular la ganancia total si se vendiera todo el inventario, considerando que
+        //el costo de compra de cada producto es un 45% del valor de venta o de un
+        //65% si pertenece a la categoria Electronica.
+
+        
 
 
     }
