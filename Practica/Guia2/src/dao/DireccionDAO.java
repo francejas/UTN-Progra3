@@ -56,4 +56,18 @@ public class DireccionDAO {
         }
         return lista;
     }
+
+    public void eliminarDireccion(int id) {
+        String sql = "DELETE FROM direcciones WHERE id = ?";
+        try (Connection con = ConexionBD.getInstancia().getConexion();
+             PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setInt(1, id);
+            int filas = st.executeUpdate();
+            if(filas > 0) System.out.println("Dirección eliminada.");
+            else System.out.println("No se encontró la dirección.");
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar dirección: " + e.getMessage());
+        }
+    }
 }

@@ -2,7 +2,6 @@ package dao;
 
 import conexion.ConexionBD;
 import modelo.Alumno;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,7 +27,7 @@ public class AlumnoDAO {
         }
     }
 
-    public List<Alumno> listaAlumnos() {
+    public List<Alumno> listarAlumnos() {
         List<Alumno> lista = new ArrayList<>();
         String sql = "SELECT * FROM alumnos";
         try (Connection con = ConexionBD.getInstancia().getConexion();
@@ -44,4 +43,45 @@ public class AlumnoDAO {
         return lista;
     }
 
+    public void actualizarEdad(int id, int nuevaEdad) {
+        String sql = "UPDATE alumnos SET edad = ? WHERE id = ?";
+        try (Connection con = ConexionBD.getInstancia().getConexion();
+             PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setInt(1, nuevaEdad);
+            st.setInt(2, id);
+            int filas = st.executeUpdate();
+            if(filas > 0) System.out.println("Edad actualizada.");
+            else System.out.println("No se encontró el alumno.");
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar: " + e.getMessage());
+        }
+    }
+
+    public void eliminarAlumno(int id) {
+        String sql = "DELETE FROM alumnos WHERE id = ?";
+        try (Connection con = ConexionBD.getInstancia().getConexion();
+             PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setInt(1, id);
+            int filas = st.executeUpdate();
+            if(filas > 0) System.out.println("Alumno eliminado.");
+            else System.out.println("No se encontró el alumno.");
+        } catch (SQLException e) {
+            System.out.println("Error al eliminar: " + e.getMessage());
+        }
+    }
+
+    // Metodo auxiliar para verificar si un alumno existe antes de cargar su dirección
+    public boolean existeAlumno(int id) {
+        String sql = "SELECT id FROM alumnos WHERE id = ?";
+        try (Connection con = ConexionBD.getInstancia().getConexion();
+             PreparedStatement st = con.prepareStatement(sql)) {
+            st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
 }
