@@ -79,13 +79,6 @@ VALUES
 ('Ana', 'López', 'MP-5678', 'Cirugía', '2237774444', 'ana.lopez@veterinaria.com');
 
 
-INSERT INTO turnos 
-(fecha, hora, motivo, estado, id_cliente, id_veterinario, id_mascota)
-VALUES
-('2024-05-10', '10:00:00', 'Control de rutina y vacunas', 'confirmado', 1, 1, 1), 
-('2024-05-10', '11:30:00', 'Problema estomacal', 'pendiente', 2, 1, 2),       
-('2024-05-12', '16:00:00', 'Consulta pre-quirúrgica', 'confirmado', 3, 2, 3);    
-
 INSERT INTO clientes 
 (nombre, apellido, telefono, email, direccion)
 VALUES
@@ -100,4 +93,12 @@ VALUES
 ('Mishi', 'Gato', 'Siamés', 3, 4.20, 2),
 ('Toby', 'Perro', 'Caniche', 2, 6.80, 3),
 ('Luna', 'Gato', 'Mestizo', 1, 3.10, 1);
+
+
+INSERT INTO turnos 
+(fecha, hora, motivo, estado, id_cliente, id_veterinario, id_mascota)
+VALUES
+('2024-05-10', '10:00:00', 'Control de rutina y vacunas', 'confirmado', 1, 1, 1), 
+('2024-05-10', '11:30:00', 'Problema estomacal', 'pendiente', 2, 1, 2),       
+('2024-05-12', '16:00:00', 'Consulta pre-quirúrgica', 'confirmado', 3, 2, 3); 
 
