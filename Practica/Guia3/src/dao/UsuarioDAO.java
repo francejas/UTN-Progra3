@@ -10,6 +10,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class UsuarioDAO {
 
@@ -157,4 +158,19 @@ public class UsuarioDAO {
         }
         return usuarios;
     }
+
+    public Optional<Usuario> buscarUsuario(String terminoBusqueda) {
+        List<Usuario> listaUsuarios = listarTodos();
+
+        return listaUsuarios.stream()
+                .filter(u -> u.getDni().equals(terminoBusqueda) || u.getEmail().equals(terminoBusqueda))
+                .findFirst();
+    }
+
+
+
+    
+
+
+
 }
