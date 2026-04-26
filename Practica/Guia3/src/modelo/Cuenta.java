@@ -25,6 +25,10 @@ public class Cuenta {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public Cuenta() {
+
+    }
+
     public int getIdCuenta() {
         return idCuenta;
     }

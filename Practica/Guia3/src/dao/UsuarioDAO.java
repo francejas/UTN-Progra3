@@ -1,6 +1,7 @@
 package dao;
 
 import conexion.ConexionBD;
+import modelo.Cuenta;
 import modelo.Permiso;
 import modelo.Usuario;
 import modelo.TipoCuenta;
@@ -191,13 +192,56 @@ public class UsuarioDAO {
         } catch (SQLException e) {
             System.out.println("Error al actualizar: " + e.getMessage());
         }
+    }
 
+    public void eliminarUsuario(int idUsuario) {
+        String sql = "DELETE FROM usuarios WHERE id_usuario = ?";
+        Connection con = ConexionBD.getInstancia().getConexion();
 
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setInt(1, idUsuario);
+            int filas = st.executeUpdate();
+
+            if (filas > 0) {
+                System.out.println("✅ Usuario, credenciales y cuentas eliminados correctamente.");
+            } else {
+                System.out.println("❌ No se encontró un usuario con ese ID.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al intentar eliminar el usuario: " + e.getMessage());
+        }
+    }
+
+    public List<Cuenta> listarTodasLasCuentas () {
+        List<Cuenta> listaCuenta = new ArrayList<>();
+        String sql = "SELECT * FROM cuentas";
+        Connection con = ConexionBD.getInstancia().getConexion();
+
+        try (PreparedStatement st = con.prepareStatement(sql);
+        ResultSet rs = st.executeQuery()){
+            while (rs.next()){
+                Cuenta cuenta = new Cuenta();
+                cuenta.setIdCuenta(rs.getInt("id_cuenta"));
+                cuenta.setIdUsuario(rs.getInt("id_usuario"));
+                cuenta.setTipo(TipoCuenta.valueOf(rs.getString("tipo")));
+                cuenta.setSaldo(rs.getBigDecimal("saldo"));
+                cuenta.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                listaCuenta.add(cuenta);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return listaCuenta;
 
     }
 
+    public List<Cuenta> listarCuentasPorUsuario (int idUsuario){
+        return listarTodasLasCuentas().stream().filter(p->p.getIdUsuario()==idUsuario).collect(Collectors.toList());
+    }
 
-
+    
 
 
 
