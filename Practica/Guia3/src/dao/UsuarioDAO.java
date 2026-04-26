@@ -167,9 +167,37 @@ public class UsuarioDAO {
                 .findFirst();
     }
 
+    public void actualizarDatosPersonales(Usuario usuario) {
+        String sql = "UPDATE usuarios SET nombre=?, apellido=?, email=? WHERE id_usuario=?";
+
+        // Pedimos la conexión al Singleton pero NO la metemos en el try con recursos
+        Connection con = ConexionBD.getInstancia().getConexion();
+
+        // Solo los recursos que queremos que se cierren van aquí adentro
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setString(1, usuario.getNombre());
+            st.setString(2, usuario.getApellido());
+            st.setString(3, usuario.getEmail());
+            st.setInt(4, usuario.getIdUsuario());
+
+            int filas = st.executeUpdate();
+            if (filas > 0) {
+                System.out.println("✅ Datos del usuario actualizados correctamente.");
+            } else {
+                System.out.println("❌ No se encontró el usuario solicitado.");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al actualizar: " + e.getMessage());
+        }
 
 
-    
+
+    }
+
+
+
 
 
 

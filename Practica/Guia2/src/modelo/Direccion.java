@@ -1,6 +1,6 @@
 package modelo;
 
-import com.mysql.cj.protocol.x.XProtocolRow;
+
 
 public class Direccion {
     private int id;
