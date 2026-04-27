@@ -241,8 +241,130 @@ public class UsuarioDAO {
         return listarTodasLasCuentas().stream().filter(p->p.getIdUsuario()==idUsuario).collect(Collectors.toList());
     }
 
-    
+    /*
+    public BigDecimal saldoTotal(int idUsuario) {
+    return listarCuentasPorUsuario(idUsuario).stream()
+            .map(c -> c.getSaldo())
+            .reduce(BigDecimal.ZERO, (acumulador, saldoActual) -> acumulador.add(saldoActual));
+}
+     */
+
+    public BigDecimal saldoTotal(int idUsuario) {
+        return listarCuentasPorUsuario(idUsuario).stream()
+                .map(Cuenta::getSaldo)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public Optional<Cuenta> buscarCuenta(int idCuenta){
+        String sql = "SELECT * FROM cuentas WHERE id_cuenta = ?";
+        Connection con = ConexionBD.getInstancia().getConexion();
+        try (PreparedStatement st = con.prepareStatement(sql);){
+            st.setInt(1,idCuenta);
+
+            try(ResultSet rs = st.executeQuery()) {
+                if (rs.next()){
+                    Cuenta c = new Cuenta();
+                    c.setIdCuenta(rs.getInt("id_cuenta"));
+                    c.setIdUsuario(rs.getInt("id_usuario"));
+                    c.setTipo(TipoCuenta.valueOf(rs.getString("tipo")));
+                    c.setSaldo(rs.getBigDecimal("saldo"));
+                    c.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+                    return Optional.of(c);
+                }
+            }
 
 
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public void actualizarSaldo(int idCuenta, BigDecimal saldo) {
+        String sql = "UPDATE cuentas SET saldo=? WHERE id_cuenta=?";
+        Connection con = ConexionBD.getInstancia().getConexion();
+
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+            // CORRECCIÓN: Primero el saldo, segundo el ID
+            st.setBigDecimal(1, saldo);
+            st.setInt(2, idCuenta);
+
+            int filas = st.executeUpdate();
+            if (filas > 0) {
+                System.out.println("✅ Operación exitosa: Saldo actualizado.");
+            } else {
+                System.out.println("❌ Error: No se encontró la cuenta para actualizar.");
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Excepción al actualizar saldo: " + e.getMessage());
+            e.printStackTrace(); // Para ver el error real en consola
+        }
+    }
+
+    public void transferir(int idCuentaOrigen, int idCuentaDestino, BigDecimal monto) {
+        String sqlOrigen = "UPDATE cuentas SET saldo = saldo - ? WHERE id_cuenta=?";
+        String sqlDestino = "UPDATE cuentas SET saldo = saldo + ? WHERE id_cuenta=?";
+
+        Connection con = null;
+        PreparedStatement stOrigen = null;
+        PreparedStatement stDestino = null;
+        // Quitamos ResultSet porque los UPDATE no devuelven tablas, solo números de filas afectadas.
+
+        try {
+            con = ConexionBD.getInstancia().getConexion();
+            con.setAutoCommit(false); // 1. Iniciamos la transacción manual
+
+            // 2. Ejecutar descuento en cuenta de origen
+            stOrigen = con.prepareStatement(sqlOrigen);
+            stOrigen.setBigDecimal(1, monto);
+            stOrigen.setInt(2, idCuentaOrigen);
+            int filasOrigen = stOrigen.executeUpdate();
+
+            // 3. Ejecutar suma en cuenta de destino
+            stDestino = con.prepareStatement(sqlDestino);
+            stDestino.setBigDecimal(1, monto);
+            stDestino.setInt(2, idCuentaDestino);
+            int filasDestino = stDestino.executeUpdate();
+
+            // 4. Validar que AMBAS cuentas existían y fueron modificadas
+            if (filasOrigen == 0 || filasDestino == 0) {
+                System.out.println("⚠️ ATENCIÓN: No se encontró una de las cuentas. Revirtiendo operación...");
+                con.rollback(); // Deshacemos todo porque algo salió mal
+                return; // Cortamos la ejecución acá
+            }
+
+            con.commit(); // 5. Todo salió bien, guardamos los cambios en la BD
+
+            // 6. Impresión bonita por consola
+            System.out.println("\n=========================================");
+            System.out.println("      ✅ TRANSFERENCIA EXITOSA ✅      ");
+            System.out.println("=========================================");
+            System.out.println(" 💰 Monto       : $" + monto);
+            System.out.println(" 📤 De la cuenta: #" + idCuentaOrigen);
+            System.out.println(" 📥 A la cuenta : #" + idCuentaDestino);
+            System.out.println("=========================================\n");
+
+        } catch (SQLException e) {
+            // 7. Si hay un error SQL (ej: se cae la base de datos a la mitad)
+            System.out.println("\n❌ ERROR CRÍTICO: Falló la transacción. Deshaciendo cambios...");
+            if (con != null) {
+                try {
+                    con.rollback(); // Fundamental: revertir si hubo excepción
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            e.printStackTrace(); // Imprime el detalle técnico del error
+        } finally {
+            // 8. Limpieza de recursos (se ejecuta SIEMPRE, haya error o no)
+            try {
+                if (stOrigen != null) stOrigen.close();
+                if (stDestino != null) stDestino.close();
+                if (con != null) con.setAutoCommit(true); // Devolvemos la conexión a su estado normal
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
