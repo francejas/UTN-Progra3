@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -366,5 +367,45 @@ public class UsuarioDAO {
             }
         }
     }
+
+
+    public Map<String, Long> obtenerCantidadUsuariosPorPermiso(){
+        String sql = "SELECT u.* , c.permiso FROM usuarios u INNER JOIN credenciales c ON u.id_usuario=c.id_usuario";
+
+        Connection con = ConexionBD.getInstancia().getConexion();
+
+        List<Usuario> listaUsuariosConPermiso = new ArrayList<>();
+
+        try(PreparedStatement st = con.prepareStatement(sql)) {
+
+            ResultSet rs = st.executeQuery();
+
+            while (rs.next()){
+                Usuario u = new Usuario();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellido(rs.getString("apellido"));
+                u.setDni(rs.getString("dni"));
+                u.setEmail(rs.getString("email"));
+                u.setFechaCreacion(rs.getTimestamp("fecha_creacion").toLocalDateTime());
+
+                u.setPermiso(Permiso.valueOf(rs.getString("permiso")));
+
+                listaUsuariosConPermiso.add(u);
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Error al consultar los usuarios: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return listaUsuariosConPermiso.stream()
+                .collect(Collectors.groupingBy(
+                        usuario -> usuario.getPermiso().name(), // Agrupa por el nombre del Enum (String)
+                        Collectors.counting()                   // Cuenta cuántos hay en cada grupo (Long)
+                ));
+
+    }
+
+
 
 }
