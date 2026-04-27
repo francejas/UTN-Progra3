@@ -8,10 +8,7 @@ import modelo.TipoCuenta;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UsuarioDAO {
@@ -406,6 +403,23 @@ public class UsuarioDAO {
 
     }
 
+    public Map<String,Long> obtenerCantidadPorTipoCuenta (){
+
+        List<Cuenta> listaCuentas = listarTodasLasCuentas();
+
+
+        return listaCuentas.stream().collect(Collectors.groupingBy(cuenta -> cuenta.getTipo().name(), Collectors.counting()));
+    }
+
+    public Usuario usuarioConMayorSaldo(){
+        return listarTodos().stream().max(Comparator.comparing(u->saldoTotal(u.getIdUsuario()))).orElse(null);
+    }
+
+    public List<Usuario> listarUsuariosPorSaldoDescendente() {
+        return listarTodos().stream()
+                .sorted(Comparator.comparing((Usuario usuario) -> saldoTotal(usuario.getIdUsuario())).reversed())
+                .collect(Collectors.toList());
+    }
 
 
 }

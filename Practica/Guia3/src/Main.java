@@ -1,9 +1,8 @@
+import vista.MenuVista;
+
 public class Main {
     public static void main(String[] args) {
-
-        System.out.println("Hola");
-
-
-
+        MenuVista aplicacion = new MenuVista();
+        aplicacion.iniciar();
     }
 }
