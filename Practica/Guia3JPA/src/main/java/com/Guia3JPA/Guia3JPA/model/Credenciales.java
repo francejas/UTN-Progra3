@@ -5,34 +5,31 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.boot.SpringApplicationRunListener;
 
 @Entity
-@Table(name = "credenciales")
-@Getter @Setter
+@Getter@Setter
 @NoArgsConstructor
+@Table(name = "credenciales")
 public class Credenciales {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_credencial;
 
-    /* == ELIMINAMOS Integer id_usuario Y PONEMOS EL OBJETO == */
     @OneToOne
-    @JoinColumn(name = "id_usuario", nullable = false) // Esta es la Foreign Key en MySQL
-    @JsonIgnore // Evita bucle infinito en Postman
+    @JoinColumn(name = "id_usuario", nullable = false)
+    @JsonIgnore
     private Usuario usuario;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    /* @Enumerated es OBLIGATORIO para los Enums.
-       EnumType.STRING le dice a MySQL que guarde la palabra "CLIENTE" y no un número (0, 1, 2) */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Permiso permiso;
+    private  Permiso permiso;
 
     public Credenciales(Usuario usuario, String username, String password, Permiso permiso) {
         this.usuario = usuario;

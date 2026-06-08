@@ -1,5 +1,7 @@
 package com.Guia3JPA.Guia3JPA.model;
 
+
+import jakarta.persistence.GeneratedValue;
 import lombok.Getter;
 import lombok.Setter;
 
