@@ -2,15 +2,18 @@ package com.Guia3JPA.Guia3JPA.controller;
 
 import com.Guia3JPA.Guia3JPA.model.*;
 import com.Guia3JPA.Guia3JPA.respository.CredencialesRespository;
+import com.Guia3JPA.Guia3JPA.respository.CuentaRepository;
 import com.Guia3JPA.Guia3JPA.respository.UsuarioRespository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.ref.ReferenceQueue;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,6 +32,9 @@ public class UsuarioController {
 
     @Autowired
     private CredencialesRespository credencialesRespository;
+
+    @Autowired
+    private CuentaRepository cuentaRepository;
 
     // 4. @PostMapping indica que este método solo se ejecuta cuando nos mandan un POST (para crear cosas)
     @PostMapping
@@ -257,6 +263,143 @@ public class UsuarioController {
             return new ResponseEntity<>("No tiene permiso", HttpStatus.FORBIDDEN);
         }
     }
+
+    @PostMapping("/{id}/depositar")
+    public ResponseEntity<?> depositar (@RequestHeader("id-solicitante") Integer idSolicitante, @PathVariable Integer id, @RequestBody DepositoRequest request){
+
+        Optional<Cuenta> cuentaOptional = cuentaRepository.findById(id);
+        Optional<Usuario> solicitanteOptional = usuarioRepository.findById(idSolicitante);
+
+        if (cuentaOptional.isEmpty()||solicitanteOptional.isEmpty()){
+            return new ResponseEntity<>("Cuenta o usuario no encontrado.", HttpStatus.NOT_FOUND);
+        }
+
+        Cuenta cuenta = cuentaOptional.get();
+        Usuario soliciante = solicitanteOptional.get();
+
+        boolean esElDuenio = cuenta.getUsuario().getId_usuario().equals(idSolicitante);
+        boolean esGestorOAdmin = soliciante.getCredenciales().getPermiso() != Permiso.CLIENTE;
+
+        if (esElDuenio || esGestorOAdmin){
+            if (request.getMonto() <= 0 ){
+                return new ResponseEntity<>("El monto debe ser positivo.", HttpStatus.BAD_REQUEST);
+            }
+
+            cuenta.setSaldo(cuenta.getSaldo()+request.getMonto());
+
+            cuentaRepository.save(cuenta);
+            return  new ResponseEntity<>("Depósito exitoso. Nuevo saldo: "+ cuenta.getSaldo(), HttpStatus.OK);
+        }else {
+            return new ResponseEntity<>("No tienes permiso para realizar esta operación", HttpStatus.FORBIDDEN);
+        }
+
+    }
+
+    @Transactional
+    @PostMapping("/{id}/transferir")
+    public ResponseEntity<?> transferir(
+            @RequestHeader("id-solicitante") Integer idSolicitante,
+            @PathVariable Integer id,
+            @RequestBody TransferenciaRequest request) {
+
+        // 1. Buscamos al solicitante
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(idSolicitante);
+        // Buscamos las cuentas por ID
+        Optional<Cuenta> origenOpt = cuentaRepository.findById(id);
+        Optional<Cuenta> destinoOpt = cuentaRepository.findById(request.getIdCuentaDestino());
+
+        if (usuarioOpt.isEmpty() || origenOpt.isEmpty() || destinoOpt.isEmpty()) {
+            return new ResponseEntity<>("Alguna de las cuentas o el usuario no existe", HttpStatus.NOT_FOUND);
+        }
+
+        Usuario usuarioSolicitante = usuarioOpt.get();
+        Cuenta cuentaOrigen = origenOpt.get();
+        Cuenta cuentaDestino = destinoOpt.get();
+
+        // 2. Uso de STREAM para validar propiedad (Punto 11 exigencia)
+        // Verificamos si la cuenta origen está en la lista de cuentas del usuario solicitante
+        boolean esElDuenio = usuarioSolicitante.getCuentas().stream()
+                .anyMatch(c -> c.getId_cuenta().equals(id));
+
+        boolean esGestorOAdmin = usuarioSolicitante.getCredenciales().getPermiso() != Permiso.CLIENTE;
+
+        // 3. Validaciones de negocio
+        if (!esElDuenio && !esGestorOAdmin) {
+            return new ResponseEntity<>("No tienes permiso para operar con esta cuenta", HttpStatus.FORBIDDEN);
+        }
+
+        if (id.equals(request.getIdCuentaDestino())) {
+            return new ResponseEntity<>("La cuenta destino debe ser distinta a la de origen", HttpStatus.BAD_REQUEST);
+        }
+
+        if (cuentaOrigen.getSaldo() < request.getMonto()) {
+            return new ResponseEntity<>("Saldo insuficiente", HttpStatus.BAD_REQUEST);
+        }
+
+        // 4. Ejecución (La lógica matemática)
+        cuentaOrigen.setSaldo(cuentaOrigen.getSaldo() - request.getMonto());
+        cuentaDestino.setSaldo(cuentaDestino.getSaldo() + request.getMonto());
+
+        // 5. Guardar cambios en la DB
+        cuentaRepository.save(cuentaOrigen);
+        cuentaRepository.save(cuentaDestino);
+
+        return new ResponseEntity<>("Transferencia exitosa", HttpStatus.OK);
+    }
+
+    @GetMapping("/estadisticas/permisos")
+    public ResponseEntity<?> obtenerCantidadPorPermiso (@RequestHeader("id-solicitante") Integer idSolicitante ){
+        Optional<Usuario> solicitanteOptional = usuarioRepository.findById(idSolicitante);
+
+        if (solicitanteOptional.isEmpty()){
+            return new ResponseEntity<>("Usuario solicitante no encontrado", HttpStatus.NOT_FOUND);
+        }
+
+        Usuario usuarioSolicitante = solicitanteOptional.get();
+
+        // Si no es gestor ni admin, cortamos el flujo acá mismo (Guarda)
+        if (!esGestorOAdmin(usuarioSolicitante.getCredenciales().getPermiso())){
+            return new ResponseEntity<>("Acceso denegado", HttpStatus.FORBIDDEN);
+        }
+
+        List<Usuario> todosLosUsuarios = usuarioRepository.findAll();
+
+        Map<Permiso, Long> conteoPorPermiso = todosLosUsuarios.stream()
+                .collect(Collectors.groupingBy(
+                        usuario -> usuario.getCredenciales().getPermiso(),
+                        Collectors.counting()
+                ));
+
+        return new ResponseEntity<>(conteoPorPermiso, HttpStatus.OK);
+    }
+
+    @GetMapping("/estadisticas/cuentas")
+    public ResponseEntity<?> obtenerCantidadPorTipoCuenta(@RequestHeader("id-solicitante")Integer idSolicitante){
+
+        Optional<Usuario> solicitanteOptional = usuarioRepository.findById(idSolicitante);
+        if (solicitanteOptional.isEmpty()){
+            return new ResponseEntity<>("Usuario solicitante no encontrado.", HttpStatus.NOT_FOUND);
+        }
+
+        Usuario usuarioSolicitante = solicitanteOptional.get();
+
+        if (!esGestorOAdmin(usuarioSolicitante.getCredenciales().getPermiso())){
+            return new ResponseEntity<>("Acceso denegado", HttpStatus.FORBIDDEN);
+        }
+
+        List<Cuenta> todasLasCuentas = cuentaRepository.findAll();
+        Map<TipoCuenta, Long> cuentasPorTipo = todasLasCuentas.stream().collect(Collectors.groupingBy(cuenta -> cuenta.getTipoCuenta(), Collectors.counting()));
+
+        return new ResponseEntity<>(cuentasPorTipo, HttpStatus.OK);
+
+    }
+
+
+    // Este método ahora es general y puedes llamarlo desde cualquier endpoint
+    private boolean esGestorOAdmin(Permiso permiso) {
+        return permiso == Permiso.GESTOR || permiso == Permiso.ADMINISTRADOR;
+    }
+
 
 
 }
