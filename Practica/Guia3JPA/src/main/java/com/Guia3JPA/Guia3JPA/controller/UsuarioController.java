@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.HttpMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.sound.midi.MidiFileFormat;
 import java.lang.ref.ReferenceQueue;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 // 1. @RestController le dice a Spring: "Esta clase va a recibir peticiones de Postman
@@ -237,6 +236,7 @@ public class UsuarioController {
         }
     }
 
+    //9
     @GetMapping("/{id}/saldo")
     public ResponseEntity<?> verSaldo(@RequestHeader("id-solicitante")Integer idSolicitante, @PathVariable Integer id){
         Optional<Usuario> usuarioOptional = usuarioRepository.findById(idSolicitante);
@@ -394,6 +394,98 @@ public class UsuarioController {
 
     }
 
+    @GetMapping("/estadisticas/lista/saldoMayor")
+    public ResponseEntity<?> obtenerUsuarioMayorSaldo (@RequestHeader("id-solicitante")Integer idSolicitante){
+        Optional<Usuario> usuarioSolicitanteOptional = usuarioRepository.findById(idSolicitante);
+
+        if (usuarioSolicitanteOptional.isEmpty()){
+            return new ResponseEntity<>("La cuenta solicitante no existe.", HttpStatus.NOT_FOUND);
+        }
+        Usuario usuarioSolicitante = usuarioSolicitanteOptional.get();
+        if (!(usuarioSolicitante.getCredenciales().getPermiso() == Permiso.ADMINISTRADOR)){
+            return new ResponseEntity<>("No tiene permiso.", HttpStatus.FORBIDDEN);
+        }
+
+        List<Usuario> todosLosUsuarios = usuarioRepository.findAll();
+
+        // 1. EL STREAM: Buscamos al usuario que tenga el máximo saldo total
+        Optional<Usuario> usuarioMaxOpt = todosLosUsuarios.stream()
+                .max(Comparator.comparingDouble(usuario -> usuario.getCuentas().stream()
+                        .mapToDouble(Cuenta::getSaldo)
+                        .sum() // Sumamos los saldos de todas las cuentas de ESTE usuario
+                ));
+
+        // Validamos por seguridad si la lista general no estaba vacía
+        if (usuarioMaxOpt.isEmpty()) {
+            return new ResponseEntity<>("No hay usuarios en el sistema.", HttpStatus.NOT_FOUND);
+        }
+        Usuario ganador = usuarioMaxOpt.get();
+
+        // 2. CALCULAMOS el saldo total del ganador para mostrarlo
+        Double saldoTotalGanador = ganador.getCuentas().stream()
+                .mapToDouble(Cuenta::getSaldo)
+                .sum();
+
+        // 3. ESTRUCTURAMOS la respuesta para Postman usando un Map común
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("usuario", ganador);
+        respuesta.put("saldoTotal", saldoTotalGanador);
+
+        return new ResponseEntity<>(respuesta, HttpStatus.OK);
+
+    }
+
+
+    //15
+
+    @GetMapping("/estadisticas/lista/saldo")
+    public ResponseEntity<?> rankingUsuariosPorSaldo (@RequestHeader("id-solicitante")Integer idSolicitante){
+
+        Optional<Usuario> usuarioSolicitanteOptional = usuarioRepository.findById(idSolicitante);
+
+        if (usuarioSolicitanteOptional.isEmpty()){
+            return new ResponseEntity<>("Usuario solicitante no encontrado.", HttpStatus.NOT_FOUND);
+        }
+
+        Usuario usuarioSolicitante = usuarioSolicitanteOptional.get();
+        if(usuarioSolicitante.getCredenciales().getPermiso() != Permiso.ADMINISTRADOR){
+            return new ResponseEntity<>("No tiene permiso.", HttpStatus.FORBIDDEN);
+        }
+
+        List<Usuario> listaTodos = usuarioRepository.findAll();
+        if (listaTodos.isEmpty()){
+            return new ResponseEntity<>("No hay usuarios registrados.", HttpStatus.NOT_FOUND);
+        }
+
+        // --- AQUÍ EMPIEZA LA MAGIA DEL STREAM ---
+
+        List<Map<String, Object>> ranking = listaTodos.stream()
+
+                // PASO 1: Transformamos cada "Usuario" en un "Map" (Bolsita de datos)
+                .map(usuario -> {
+                    // Calculamos el saldo total de este usuario sumando sus cuentas
+                    Double saldoTotal = usuario.getCuentas().stream()
+                            .mapToDouble(Cuenta::getSaldo)
+                            .sum();
+
+                    // Creamos la estructura que vos querías ver en Postman
+                    Map<String, Object> estructuraUsuario = new HashMap<>();
+                    estructuraUsuario.put("usuario", usuario);
+                    estructuraUsuario.put("saldoTotal", saldoTotal);
+
+                    return estructuraUsuario; // El stream ahora pasa a ser de "Maps"
+                })
+
+                // PASO 2: Ordenamos el Stream de mayor a menor usando el "saldoTotal" de cada Map
+                // Usamos (m2, m1) en vez de (m1, m2) para que sea DESCENDENTE
+                .sorted((m1, m2) -> Double.compare((Double) m2.get("saldoTotal"), (Double) m1.get("saldoTotal")))
+
+                // PASO 3: Agrupamos el resultado final en una lista ordenada
+                .collect(Collectors.toList());
+
+        // Devolvemos la lista con el ranking de lo más bien
+        return new ResponseEntity<>(ranking, HttpStatus.OK);
+    }
 
     // Este método ahora es general y puedes llamarlo desde cualquier endpoint
     private boolean esGestorOAdmin(Permiso permiso) {
