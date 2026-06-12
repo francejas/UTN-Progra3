@@ -23,10 +23,10 @@ public class Mascota {
     private Integer edad;
     private Double peso;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idCliente")
     @JsonIgnore
-    private Cliente duenio;
+    private Cliente cliente;
 
     //una mascota tiene muchos turnos
     @OneToMany(mappedBy = "mascota", cascade = CascadeType.ALL, orphanRemoval = true)

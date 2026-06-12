@@ -22,6 +22,7 @@ public class Turno {
     private LocalDate fecha;
     private LocalTime hora;
     private String motivo;
+    @Enumerated(EnumType.STRING) // Agregamos esto para que guarde el texto del Enum y no un número
     private Estado estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,7 +35,10 @@ public class Turno {
     @JsonIgnore
     private Veterinario veterinario;
 
-    //deberia de hacer lo mismo con mascota ?
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idMascota")
+    @JsonIgnore
+    private Mascota mascota;
 
 
 }
